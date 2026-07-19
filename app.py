@@ -48,7 +48,7 @@ try:
     
     unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
-    search_query1 = st.selectbox("Type or choose an item:", unique_items)
+    search_query1 = st.selectbox("Select an item to view purchase history:", unique_items)
     
     if search_query1:
         item_history = df[df['Item Name'] == search_query1]
@@ -75,7 +75,7 @@ try:
     
     #unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
-    search_query2 = st.selectbox("Type or choose an item:", unique_items)
+    search_query2 = st.selectbox("Select an item to compare store prices:", unique_items)
     
     if search_query2:
         item_history2 = df[df['Item Name'] == search_query2]
