@@ -73,17 +73,17 @@ try:
     st.markdown("### 🔍 Store Price Comparison Search")
     st.write("Find where an item is cheapest based on your purchase history:")
     
-    unique_items = sorted(df['Item Name'].dropna().unique().tolist())
+    #unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
     search_query2 = st.selectbox("Type or choose an item:", unique_items)
     
     if search_query2:
-        item_history = df[df['Item Name'] == search_query2]
+        item_history2 = df[df['Item Name'] == search_query2]
         
-        if not item_history.empty:
+        if not item_history2.empty:
             # Group by Store to find standard costs recorded
             # Aggregates Min Unit Cost, Max Unit Cost, and Average Total Paid across trips
-            price_comparison = item_history.groupby('Shop').agg(
+            price_comparison = item_history2.groupby('Shop').agg(
                 Lowest_Unit_Cost=('Unit cost', lambda x: x[x > 0].min() if (x > 0).any() else 0.0),
                 Highest_Unit_Cost=('Unit cost', max),
                 Avg_Total_Paid=('Total cost', 'mean'),
