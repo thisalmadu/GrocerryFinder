@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Optimize layout viewport strictly for mobile touchscreens
+
 st.set_page_config(
     page_title="Grocery Expenses Mobile Tracker", 
     page_icon="🛒", 
@@ -12,18 +12,16 @@ st.set_page_config(
 st.title("🛒 Grocery Expenses Analytics")
 st.caption("Live interactive tracking powered by your GitHub Excel data")
 
-@st.cache_data(ttl=300) # Caches for 5 minutes to keep it highly snappy on mobile web browsers
+@st.cache_data(ttl=300) 
 def load_grocery_data():
-    # Load the specific worksheet, skipping the initial blank line row layout
+    
     df = pd.read_excel("./data/Grocessary_items.xlsx", sheet_name="Grocery expenses done", header=1)
     
-    # Strip spaces from string columns
     string_cols = ['Month', 'Shop', 'Category I', 'Category II', 'Item Name']
     for col in string_cols:
         if col in df.columns:
             df[col] = df[col].astype(str).str.strip()
             
-    # Clean numeric fields safely
     df['Total cost'] = pd.to_numeric(df['Total cost'], errors='coerce').fillna(0.0)
     df['Unit cost'] = pd.to_numeric(df['Unit cost'], errors='coerce').fillna(0.0)
     return df
@@ -31,10 +29,9 @@ def load_grocery_data():
 try:
     df = load_grocery_data()
 
-    # --- TOP LEVEL HIGH-VALUE KPIS ---
+    # HIGH-VALUE KPIS
     total_spend = df['Total cost'].sum()
     total_items = len(df)
-    unique_shops = df['Shop'].nunique()
 
     st.markdown("### 📈 Summary Statistics")
     m1, m2 = st.columns(2)
@@ -45,10 +42,50 @@ try:
 
     st.markdown("---")
 
-    # --- PHONE COMPATIBLE INTERACTIVE FILTERS ---
-    st.markdown("### 🔍 Mobile Filter Panel")
+    # CROSS-MARKET PRICE COMPARE
+    st.markdown("### 🔍 Store Price Comparison Search")
+    st.write("Find where an item is cheapest based on your purchase history:")
     
-    # Fetch lists for dropdown selection filters
+    unique_items = sorted(df['Item Name'].dropna().unique().tolist())
+    
+    search_query = st.selectbox("Type or choose an item:", unique_items)
+    
+    if search_query:
+        item_history = df[df['Item Name'] == search_query]
+        
+        if not item_history.empty:
+            # Group by Store to find standard costs recorded
+            # Aggregates Min Unit Cost, Max Unit Cost, and Average Total Paid across trips
+            price_comparison = item_history.groupby('Shop').agg(
+                Lowest_Unit_Cost=('Unit cost', lambda x: x[x > 0].min() if (x > 0).any() else 0.0),
+                Highest_Unit_Cost=('Unit cost', max),
+                Avg_Total_Paid=('Total cost', 'mean'),
+                Total_Times_Bought=('Item Name', 'count')
+            ).reset_index()
+            
+            # Format display strings for mobile layout clean text rendering
+            price_comparison['Lowest Unit Cost'] = price_comparison['Lowest_Unit_Cost'].apply(lambda x: f"€{x:.2f}" if x > 0 else "N/A")
+            price_comparison['Highest Unit Cost'] = price_comparison['Highest_Unit_Cost'].apply(lambda x: f"€{x:.2f}" if x > 0 else "N/A")
+            price_comparison['Avg Total Spent'] = price_comparison['Avg_Total_Paid'].apply(lambda x: f"€{x:.2f}")
+            
+            # Rename columns nicely for screen viewability
+            comparison_display = price_comparison[['Shop', 'Lowest Unit Cost', 'Highest Unit Cost', 'Avg Total Spent', 'Total_Times_Bought']].rename(
+                columns={'Shop': 'Market/Store', 'Total_Times_Bought': 'Trips Recorded'}
+            )
+            
+            # Render the dynamic query table layout
+            st.dataframe(comparison_display, use_container_width=True, hide_index=True)
+            
+            # mobile helper tip
+            st.caption("💡 *'N/A' means you bought the item as a bulk or weight price packet without a per-unit tracking entry.*")
+        else:
+            st.info("No market matching logs discovered for that item.")
+
+    st.markdown("---")
+
+    # INTERACTIVE FILTERS
+    st.markdown("### 🎛️ Main Dashboard Filter Panel")
+    
     month_list = ["All Months"] + sorted(df['Month'].dropna().unique().tolist())
     shop_list = ["All Shops"] + sorted(df['Shop'].dropna().unique().tolist())
     cat_list = ["All Categories"] + sorted(df['Category I'].dropna().unique().tolist())
@@ -57,7 +94,7 @@ try:
     selected_shop = st.selectbox("Filter by Shop/Store:", shop_list, index=0)
     selected_cat = st.selectbox("Filter by Category:", cat_list, index=0)
 
-    # Apply filters dynamically
+    # filters dynamically
     filtered_df = df.copy()
     if selected_month != "All Months":
         filtered_df = filtered_df[filtered_df['Month'] == selected_month]
@@ -77,7 +114,7 @@ try:
 
     st.markdown("---")
 
-    # --- VISUAL ANALYTICS TARGETED FOR MOBILE VIEWPORTS ---
+    # VISUAL ANALYTICS TARGETED FOR MOBILE VIEWPORTS ---
     st.markdown("### 📊 Spending Breakdowns")
 
     # Tab 1: Category breakdown
@@ -85,7 +122,7 @@ try:
     
     with tab1:
         cat_data = filtered_df.groupby('Category I')['Total cost'].sum().reset_index()
-        cat_data = cat_data.sort_values(by='Total cost', ascending=True).tail(10) # Top 10 categories
+        cat_data = cat_data.sort_values(by='Total cost', ascending=True).tail(10)
         
         fig_cat = px.bar(
             cat_data, 
@@ -102,7 +139,7 @@ try:
 
     with tab2:
         shop_data = filtered_df.groupby('Shop')['Total cost'].sum().reset_index()
-        shop_data = shop_data.sort_values(by='Total cost', ascending=False).head(8) # Top 8 shops
+        shop_data = shop_data.sort_values(by='Total cost', ascending=False).head(8)
         
         fig_shop = px.pie(
             shop_data, 
@@ -116,7 +153,6 @@ try:
 
     with tab3:
         month_data = filtered_df.groupby('Month')['Total cost'].sum().reset_index()
-        # Sort values logically by volume/order if necessary
         fig_month = px.bar(
             month_data, 
             x='Month', 
@@ -130,7 +166,7 @@ try:
 
     st.markdown("---")
 
-    # --- RAW SPREADSHEET VIEWER ---
+    # RAW SPREADSHEET VIEWER
     with st.expander("🔍 Open Full Raw Grocery Data Sheets"):
         st.dataframe(
             filtered_df[['Month', 'Date', 'Shop', 'Category I', 'Item Name', 'Total cost']], 
@@ -138,4 +174,4 @@ try:
         )
 
 except Exception as e:
-    st.error(f"Failed to cleanly interpret Grocessary_items.xlsx. Error layout specifics: {e}")
+    st.error(f"Failed to cleanly interpret Grocessary_items.xlsx. Details: {e}")
