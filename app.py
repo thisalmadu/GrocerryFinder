@@ -44,7 +44,7 @@ try:
 
     # CROSS-MARKET PRICE COMPARE (Total)
     st.markdown("### 🔍 Store Price Comparison (Full)")
-    st.write("Find where an item is cheapest based on your purchase history:")
+    st.write("Find item that is in the purchase history:")
     
     unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
@@ -73,7 +73,7 @@ try:
     st.markdown("### 🔍 Store Price Comparison Search")
     st.write("Find where an item is cheapest based on your purchase history:")
     
-    #unique_items = sorted(df['Item Name'].dropna().unique().tolist())
+    unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
     search_query2 = st.selectbox("Type or choose an item:", unique_items)
     
