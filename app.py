@@ -42,11 +42,38 @@ try:
 
     st.markdown("---")
 
+    # CROSS-MARKET PRICE COMPARE (Total)
+    st.markdown("### 🔍 Store Price Comparison (Full)")
+    st.write("Find where an item is cheapest based on your purchase history:")
+    
+    unique_items = sorted(df['Item Name'].dropna().unique().tolist())
+    
+    search_query = st.selectbox("Type or choose an item:", unique_items)
+    
+    if search_query:
+        item_history = df[df['Item Name'] == search_query]
+        
+        if not item_history.empty:
+            
+            table_display = item_history[['Shop', 'Category I', 'Description', 'Amount', 'Total cost']].rename(
+                columns={'Shop': 'Market/Store', 'Category I': 'Category', 'Total cost': 'Total'}
+            )
+            
+            # Render the dynamic query table layout
+            st.dataframe(table_display, use_container_width=True, hide_index=True)
+            
+            # mobile helper tip
+            st.caption("💡 *'N/A' means you bought the item as a bulk or weight price packet without a per-unit tracking entry.*")
+        else:
+            st.info("No market matching logs discovered for that item.")
+
+    st.markdown("---")
+
     # CROSS-MARKET PRICE COMPARE
     st.markdown("### 🔍 Store Price Comparison Search")
     st.write("Find where an item is cheapest based on your purchase history:")
     
-    unique_items = sorted(df['Item Name'].dropna().unique().tolist())
+    #unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
     search_query = st.selectbox("Type or choose an item:", unique_items)
     
