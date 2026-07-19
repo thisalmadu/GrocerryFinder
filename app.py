@@ -48,10 +48,10 @@ try:
     
     unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
-    search_query = st.selectbox("Type or choose an item:", unique_items)
+    search_query1 = st.selectbox("Type or choose an item:", unique_items)
     
-    if search_query:
-        item_history = df[df['Item Name'] == search_query]
+    if search_query1:
+        item_history = df[df['Item Name'] == search_query1]
         
         if not item_history.empty:
             
@@ -75,10 +75,10 @@ try:
     
     #unique_items = sorted(df['Item Name'].dropna().unique().tolist())
     
-    search_query = st.selectbox("Type or choose an item:", unique_items)
+    search_query2 = st.selectbox("Type or choose an item:", unique_items)
     
-    if search_query:
-        item_history = df[df['Item Name'] == search_query]
+    if search_query2:
+        item_history = df[df['Item Name'] == search_query2]
         
         if not item_history.empty:
             # Group by Store to find standard costs recorded
