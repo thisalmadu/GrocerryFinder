@@ -184,12 +184,5 @@ try:
 
     st.markdown("---")
 
-    # RAW SPREADSHEET VIEWER
-    with st.expander("🔍 Open Full Raw Grocery Data Sheets"):
-        st.dataframe(
-            filtered_df[['Month', 'Date', 'Shop', 'Category I', 'Item Name', 'Total cost']], 
-            use_container_width=True
-        )
-
 except Exception as e:
     st.error(f"Failed to cleanly interpret Grocessary_items.xlsx. Details: {e}")
