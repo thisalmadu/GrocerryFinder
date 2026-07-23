@@ -32,7 +32,7 @@ try:
     # HIGH-VALUE KPIS
     total_spend = df['Total cost'].sum()
     total_items = len(df)
-
+    """
     st.markdown("### 📈 Summary Statistics")
     m1, m2 = st.columns(2)
     with m1:
@@ -41,6 +41,7 @@ try:
         st.metric(label="Items Purchased", value=f"{total_items:,}")
 
     st.markdown("---")
+    """
 
     # CROSS-MARKET PRICE COMPARE (Total)
     st.markdown("### 🔍 Store Price Comparison (Full)")
